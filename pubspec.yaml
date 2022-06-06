@@ -34,7 +34,7 @@ dependencies:
     git:
       url: https://github.com/zhengbomo/flutter_tflite.git
       ref: master
-  flare_splash_screen: ^4.0.0
+  animated_splash_screen: ^1.2.0
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -83,10 +83,10 @@ flutter:
   fonts:
     - family: Joan
       fonts:
-        - asset: fonts/Joan-Regular.tff
-    - family: GentiumPlus
+        - asset: fonts/Joan-Regular.ttf
+    - family: Gentium Plus
       fonts:
         - asset: fonts/GentiumPlus-Bold.ttf
-
+          weight: 700
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
