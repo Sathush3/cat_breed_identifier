@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:tflite/tflite.dart';
 
 class MyHomepage extends StatefulWidget {
   const MyHomepage({Key? key}) : super(key: key);
@@ -15,24 +16,92 @@ class MyHomepageState extends State<MyHomepage> {
   late Future<File> imageFile;
   bool _loading = true;
   late File _image;
-  String result = 'test';
+  String result = '';
   late ImagePicker imagePicker;
 
   //Functions
 
 // selecting photo
-  selectPhoto() async {}
+  selectPhoto() async {
+    var image = await imagePicker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) {
+      return null;
+    } else {
+      _image = File(image.path);
+      _loading = false; //temp change later
+    }
+
+    setState(() {
+      _loading; //temp change later
+      _image;
+      doImageClassification();
+    });
+  }
 
 // capture from camera
-  capturePhoto() async {}
+  capturePhoto() async {
+    var image = await imagePicker.pickImage(source: ImageSource.camera);
+
+    if (image == null) {
+      return null;
+    } else {
+      _image = File(image.path);
+      _loading = false; //temp change later
+    }
+
+    setState(() {
+      _image;
+      _loading; //temp change later
+      doImageClassification();
+    });
+  }
+
 // load model
+  loadDataModel() async {
+    print("load mdel");
+
+    await Tflite.loadModel(
+        model: 'model/model_unquant.tflite',
+        labels: 'model/labels.txt',
+        numThreads: 1,
+        useGpuDelegate: false);
+    print('model loaded');
+    //print(output);
+  }
 
   // prediction
+  doImageClassification() async {
+    print("image classify");
+    var recognition = await Tflite.runModelOnImage(
+        path: _image.path,
+        imageMean: 0.0,
+        imageStd: 255.0,
+        numResults: 2,
+        threshold: 0.1,
+        asynch: true);
 
+    print(recognition?.length.toString());
+    print(recognition);
+
+    setState(() {
+      result = '';
+    });
+    recognition?.forEach((element) {
+      setState(() {
+        print(element.toString());
+        result += element['label'];
+      });
+    });
+  }
   // initilaizing
 
   @override
-  void initState() {}
+  void initState() {
+    super.initState();
+    imagePicker = ImagePicker();
+    loadDataModel();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +115,7 @@ class MyHomepageState extends State<MyHomepage> {
           child: Column(
             children: [
               SizedBox(
-                height: 100,
+                height: 20,
               ),
               Container(
                 margin: EdgeInsets.only(top: 40),
@@ -59,12 +128,12 @@ class MyHomepageState extends State<MyHomepage> {
                           child: Container(
                             margin:
                                 EdgeInsets.only(top: 20, right: 35, left: 18),
-                            child: // _image != null
+                            child: //_image != null
                                 // change to image later
                                 _loading == false
                                     ? Image.file(
                                         _image,
-                                        height: 160,
+                                        height: 200,
                                         width: 400,
                                         fit: BoxFit.cover,
                                       )
